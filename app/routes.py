@@ -86,7 +86,5 @@ def date_range():
             output_data = report.generate_token_balance_report_in_date_range(start_date, end_date)
             output_filename = report.output_report(output_data)
 
-            filepath = os.path.join(os.getcwd(), '{}/{}'.format(GENERATED_REPORT_PATH, output_filename))
-            return send_file(filepath)
 
     return render_template('date-range.html', as_attachment=True)
