@@ -27,7 +27,6 @@ class Moralis:
         url = Moralis.MORALIS_BASE_URL + '/{}/erc20?chain={}&to_block={}'.format(wallet_address, chain, block_no)
         response = requests.get(url, headers=Moralis.headers)
         data = response.json()
-        pprint(data)
             
         return data
 
@@ -39,7 +38,6 @@ class Moralis:
         url = Moralis.MORALIS_BASE_URL + '/{}/balance?chain={}&to_block={}'.format(wallet_address, chain, block_no)
         response = requests.get(url, headers=Moralis.headers)
         data = response.json()
-        pprint(data)
             
         return data
 
@@ -55,7 +53,6 @@ class Moralis:
         url = Moralis.MORALIS_BASE_URL + '/dateToBlock?chain={}&date={}'.format(chain, unix_datetime_ms)
         response = requests.get(url, headers=Moralis.headers)
         data = response.json()
-        pprint(data)
             
         return data['block']
 
