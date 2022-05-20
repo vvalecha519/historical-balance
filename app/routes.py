@@ -29,6 +29,8 @@ def single_block():
             file_ext = os.path.splitext(filename)[1]
             if file_ext not in UPLOAD_EXTENSIONS:
                 abort(400)
+            if not os.path.exists(UPLOAD_PATH):
+                os.makedirs(UPLOAD_PATH)  # create the directory if it doesn't exist
             filepath = os.path.join(UPLOAD_PATH, filename)
             uploaded_file.save(filepath)
 
@@ -54,6 +56,8 @@ def block_range():
             file_ext = os.path.splitext(filename)[1]
             if file_ext not in UPLOAD_EXTENSIONS:
                 abort(400)
+            if not os.path.exists(UPLOAD_PATH):
+                os.makedirs(UPLOAD_PATH)  # create the directory if it doesn't exist
             filepath = os.path.join(UPLOAD_PATH, filename)
             uploaded_file.save(filepath)
 
@@ -79,6 +83,8 @@ def date_range():
             file_ext = os.path.splitext(filename)[1]
             if file_ext not in UPLOAD_EXTENSIONS:
                 abort(400)
+            if not os.path.exists(UPLOAD_PATH):
+                os.makedirs(UPLOAD_PATH)  # create the directory if it doesn't exist
             filepath = os.path.join(UPLOAD_PATH, filename)
             uploaded_file.save(filepath)
 
