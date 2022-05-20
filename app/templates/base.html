@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <script src="https://cdn.tailwindcss.com"></script>
+
+
+
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}">
+
+      {% if title %}
+        <title>{{ title }} - Historical Balance Tool</title>
+      {% else %}
+        <title>Historical Balance Tool</title>
+      {% endif %}
+
+  </head>
+  <body>
+
+    <div class="container m-auto mt-3">
+        <div class="w-full justify-content-center text-center">
+            <div class="font-semibold text-3xl text-center">
+                <h1>Historical Balance Tool</h1>
+            </div>
+            <div class="justify-items-center items-center my-5">
+                <ul class="flex flex-col mt-4 md:flex-row md:space-x-8 md:mt-0 md:text-sm md:font-medium justify-center">
+                  <li>
+                    <a href="{{ url_for('index') }}" class="block py-2 pr-4 pl-3 md:p-0 hover:text-gray-700">Home</a>
+                  </li>
+                  <li>
+                    <a href="{{ url_for('single_block') }}" class="block py-2 pr-4 pl-3 md:p-0 hover:text-gray-700">Block</a>
+                  </li>
+                  <li>
+                    <a href="{{ url_for('block_range') }}" class="block py-2 pr-4 pl-3 md:p-0 hover:text-gray-700">Block Range</a>
+                  </li>
+                  <li>
+                    <a href="{{ url_for('date_range') }}" class="block py-2 pr-4 pl-3 md:p-0 hover:text-gray-700">Date Range</a>
+                  </li>
+                </ul>
+              </div>
+        
+
+        {% block content %}
+        
+        {% endblock %}
+        </div>
+    </div>
+
+  </body>
+</html>
