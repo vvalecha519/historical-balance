@@ -9,6 +9,7 @@ class TokenBalance:
     chain = None
     block_number = None
     formatted_balance = None
+    timestamp = None
 
     def get_balance_with_decimal(self):
         decimal_point_index = len(self.balance) - self.decimals
@@ -27,6 +28,5 @@ class TokenBalance:
         return self.balance[:decimal_point_index] + "." + self.balance[decimal_point_index:]
 
     def generate_formatted_balance(self):
-        integral_part, fractional_part = "{:.4f}".format(float(self.get_balance_with_decimal())).split(".")
-        self.formatted_balance = integral_part + "." + fractional_part
+        self.formatted_balance = self.get_balance_with_decimal()
 

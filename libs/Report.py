@@ -11,9 +11,9 @@ from datetime import datetime, timedelta
 GENERATED_REPORT_PATH = 'generated_reports'
 
 
-CHAINS = [{'id': 'eth', 'name': 'Native Ethereum', 'symbol': 'Native ETH', 'avg_blocks_per_day': 6300},
-            {'id': 'matic','name': 'Native Polygon (Matic)', 'symbol': 'Native MATIC', 'avg_blocks_per_day': 24 * 60 * 60 / 3},
-            {'id': 'avalanche', 'name': 'Native Avalanche', 'symbol': 'Native AVAX', 'avg_blocks_per_day': 24 * 60 * 60 / 3}]
+CHAINS = [{'id': 'eth', 'name': 'Ethereum', 'symbol': 'ETH', 'avg_blocks_per_day': 6300},
+            {'id': 'matic','name': 'Polygon (Matic)', 'symbol': 'MATIC', 'avg_blocks_per_day': 24 * 60 * 60 / 3},
+            {'id': 'avalanche', 'name': 'Avalanche', 'symbol': 'AVAX', 'avg_blocks_per_day': 24 * 60 * 60 / 3}]
 
 
 class Report:
@@ -32,7 +32,7 @@ class Report:
         for date in date_range:
             block_no = Moralis.get_block_number_from_datetime(date)
             time.sleep(1)  # sleep for 1 second to avoid rate limit
-            output_data.extend(self.generate_token_balance_report(block_no))
+            output_data.extend(self.generate_token_balance_report(block_no, date))
         return output_data
 
 
@@ -45,7 +45,7 @@ class Report:
 
 
 
-    def generate_token_balance_report(self, block_no):
+    def generate_token_balance_report(self, block_no, timestamp=None):
         output_data = []
         
         for wallet_data in self.wallet_sheet.itertuples():
@@ -54,7 +54,7 @@ class Report:
 
             chain_data = None
             for chain in CHAINS:
-                if chain.get('id') == wallet_data.chain:
+                if chain.get('id') == wallet_data.chain.lower():
                     chain_data = chain
 
             native_balance = Moralis.get_native_balance(wallet_address, chain_data.get('id'), block_no)
@@ -64,9 +64,10 @@ class Report:
             token_balance.decimals = 18
             token_balance.name = chain_data.get('name')
             token_balance.symbol = chain_data.get('symbol')
-            token_balance.token_address = 'NATIVE'  # not applicable for native tokens
+            token_balance.token_address = None  # not applicable for native tokens
             token_balance.chain = chain_data.get('id')
             token_balance.block_number = block_no
+            token_balance.timestamp = timestamp
 
             token_balance.generate_formatted_balance()
 
@@ -90,6 +91,7 @@ class Report:
                     token_balance.token_address = balance_data['token_address']
                     token_balance.chain = chain_data.get('id')
                     token_balance.block_number = block_no
+                    token_balance.timestamp = timestamp
 
                     token_balance.generate_formatted_balance()
                     print(token_balance.formatted_balance)
@@ -110,9 +112,9 @@ class Report:
 
         with open(os.path.join(GENERATED_REPORT_PATH, output_filename), mode='w') as output_file:
             output_writer = csv.writer(output_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-            output_writer.writerow(['Wallet Address', 'Contract Address','Name', 'Symbol', 'Balance', 'Chain', 'Block Number'])
+            output_writer.writerow(['Wallet Address', 'Contract Address','Name', 'Symbol', 'Balance', 'Chain', 'Block Number', 'Timestamp'])
             for entry in output_data:
-                output_writer.writerow([entry.owner_address, entry.token_address, entry.name, entry.symbol, entry.formatted_balance, entry.chain, entry.block_number])
+                output_writer.writerow([entry.owner_address, entry.token_address, entry.name, entry.symbol, entry.formatted_balance, entry.chain.upper(), entry.block_number, entry.timestamp.strftime('%Y-%m-%d')])
 
 
         return output_filename
