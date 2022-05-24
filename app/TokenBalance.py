@@ -11,19 +11,6 @@ class TokenBalance:
     formatted_balance = None
     timestamp = None
 
-    def __init__(self, owner_address=None, balance=None, decimals=None, name=None, symbol=None, token_address=None, chain=None, block_number=None, timestamp=None):
-        self.owner_address = owner_address
-        self.balance = balance
-        self.decimals = decimals
-        self.name = name
-        self.symbol = symbol
-        self.token_address = token_address
-        self.chain = chain
-        self.block_number = block_number
-        self.timestamp = timestamp
-
-        self.generate_formatted_balance()
-
     def to_pd_dict(self):
         return {
             'owner_address': self.owner_address,
@@ -31,7 +18,6 @@ class TokenBalance:
             'name': self.name,
             'symbol': self.symbol,
             'chain': self.chain,
-            'formatted_balance': self.formatted_balance,
         }
 
     def get_balance_with_decimal(self):

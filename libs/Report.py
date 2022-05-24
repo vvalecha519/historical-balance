@@ -26,7 +26,10 @@ class Report:
     def __init__(self, filepath):
         xls = pd.ExcelFile(filepath)
         self.wallet_sheet = pd.read_excel(xls, 0)
-        self.contracts = pd.read_excel(xls, 1).iloc[:, 0]
+        try:
+            self.contracts = pd.read_excel(xls, 1).iloc[:, 0]
+        except:
+            self.contracts = None
 
     # Inclusive range
     def generate_token_balance_report_in_date_range(self, start_date, end_date):
@@ -69,7 +72,7 @@ class Report:
             token_balance.decimals = 18
             token_balance.name = chain_data.get('name')
             token_balance.symbol = chain_data.get('symbol')
-            token_balance.token_address = 'NATIVE' + chain_data.get('symbol')
+            token_balance.token_address = 'NATIVE ' + chain_data.get('symbol')
             token_balance.chain = chain_data.get('id')
             token_balance.block_number = block_no
             token_balance.timestamp = timestamp
@@ -92,33 +95,69 @@ class Report:
                     in_contracts = len([x for x in self.contracts if x.lower() == token_address.lower()]) > 0
 
                 if in_contracts:
-                    token_balance = TokenBalance()
-                    token_balance.owner_address = wallet_address
-                    token_balance.balance = balance_data['balance']
-                    token_balance.decimals = balance_data['decimals']
-                    token_balance.name = balance_data['name']
-                    token_balance.symbol = balance_data['symbol']
-                    token_balance.token_address = balance_data['token_address']
-                    token_balance.chain = chain_data.get('id')
-                    token_balance.block_number = block_no
-                    token_balance.timestamp = timestamp
+                    try:
+                        token_balance = TokenBalance()
+                        token_balance.owner_address = wallet_address
+                        token_balance.balance = balance_data['balance']
+                        token_balance.decimals = balance_data['decimals']
+                        token_balance.name = balance_data['name']
+                        token_balance.symbol = balance_data['symbol']
+                        token_balance.token_address = balance_data['token_address']
+                        token_balance.chain = chain_data.get('id')
+                        token_balance.block_number = block_no
+                        token_balance.timestamp = timestamp
 
-                    token_balance.generate_formatted_balance()
-                    print(token_balance.formatted_balance)
+                        print('')
+                        print(token_balance.balance)
+                        print(token_balance.decimals)
+                        print(token_balance.name)
 
-                    output_data.append(token_balance)
+                        token_balance.generate_formatted_balance()
+
+                        output_data.append(token_balance)
+                    except:
+                        continue
 
             time.sleep(1)  # sleep for 1 second to avoid rate limit
                 
         return output_data
 
 
-    def adapt_data_to_pd(self, data):
+    def adapt_to_pd_and_output(self, data):
         df = pd.DataFrame()
 
+        for token_balance in data:
+            if df.empty:
+                match = []
+            else:
+                match = df[(df['owner_address'] == token_balance.owner_address) & (df['token_address'] == token_balance.token_address) & (df['chain'] == token_balance.chain)]
+
+            column_header = 'Block Number: ' + str(token_balance.block_number)
+            if token_balance.timestamp:
+                column_header += "\n" + token_balance.timestamp.strftime("%Y-%m-%d %H:%M:%S")
+
+            if len(match) == 0: # add if no match
+                df2 = pd.DataFrame(token_balance.to_pd_dict(), index=[0])
+                df2.loc[0, column_header] = token_balance.formatted_balance 
+                df = pd.concat([df, df2], ignore_index=True)
+            else:
+                df.loc[match.index, column_header] = token_balance.formatted_balance
+
+
+        df.rename(columns={'owner_address': 'Owner Address', 'token_address': 'Token Address', 'name': 'Name', 'symbol': 'Symbol', 'chain': 'Chain'}, inplace=True)
+        
+        if not os.path.exists(GENERATED_REPORT_PATH):
+                os.makedirs(GENERATED_REPORT_PATH)  # create the directory if it doesn't exist
+
+        output_filename = 'token_balance_report_' + str(datetime.now().strftime('%Y-%m-%d_%H-%M-%S')) + '.csv'
+        
+        df.to_csv(os.path.join(GENERATED_REPORT_PATH, output_filename), index=False)
+
+        return output_filename
 
     
 
+'''
 
     def output_report(self, output_data):
         if not os.path.exists(GENERATED_REPORT_PATH):
@@ -139,4 +178,4 @@ class Report:
 
 
         return output_filename
-
+'''

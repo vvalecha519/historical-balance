@@ -36,7 +36,7 @@ def single_block():
 
             report = Report(filepath)
             output_data = report.generate_token_balance_report(block_no)
-            output_filename = report.output_report(output_data)
+            output_filename = report.adapt_to_pd_and_output(output_data)
 
             filepath = os.path.join(os.getcwd(), '{}/{}'.format(GENERATED_REPORT_PATH, output_filename))
             return send_file(filepath)
@@ -63,7 +63,7 @@ def block_range():
 
             report = Report(filepath)
             output_data = report.generate_token_balance_report_in_block_range(start_block, end_block)
-            output_filename = report.output_report(output_data)
+            output_filename = report.adapt_to_pd_and_output(output_data)
 
             filepath = os.path.join(os.getcwd(), '{}/{}'.format(GENERATED_REPORT_PATH, output_filename))
             return send_file(filepath)
@@ -90,7 +90,7 @@ def date_range():
 
             report = Report(filepath)
             output_data = report.generate_token_balance_report_in_date_range(start_date, end_date)
-            output_filename = report.output_report(output_data)
+            output_filename = report.adapt_to_pd_and_output(output_data)
 
             filepath = os.path.join(os.getcwd(), '{}/{}'.format(GENERATED_REPORT_PATH, output_filename))
             return send_file(filepath)
