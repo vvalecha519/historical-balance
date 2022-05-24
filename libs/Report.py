@@ -6,6 +6,7 @@ import pandas as pd
 from libs.Moralis import Moralis
 from app.TokenBalance import TokenBalance
 from datetime import datetime, timedelta
+from itertools import groupby
 
 
 GENERATED_REPORT_PATH = 'generated_reports'
@@ -19,6 +20,8 @@ CHAINS = [{'id': 'eth', 'name': 'Ethereum', 'symbol': 'ETH', 'avg_blocks_per_day
 class Report:
     wallet_sheet = None
     contracts = None
+
+    output_data = []
 
     def __init__(self, filepath):
         xls = pd.ExcelFile(filepath)
@@ -39,6 +42,8 @@ class Report:
     # Inclusive range
     def generate_token_balance_report_in_block_range(self, start_block, end_block):
         output_data = []
+        start_block = int(start_block)
+        end_block = int(end_block)
         for block_no in range(start_block, end_block + 1):
             output_data.extend(self.generate_token_balance_report(block_no))
         return output_data
@@ -64,7 +69,7 @@ class Report:
             token_balance.decimals = 18
             token_balance.name = chain_data.get('name')
             token_balance.symbol = chain_data.get('symbol')
-            token_balance.token_address = None  # not applicable for native tokens
+            token_balance.token_address = 'NATIVE' + chain_data.get('symbol')
             token_balance.chain = chain_data.get('id')
             token_balance.block_number = block_no
             token_balance.timestamp = timestamp
@@ -79,7 +84,12 @@ class Report:
             for balance_data in data:
                 token_address = balance_data['token_address']
 
-                in_contracts = len([x for x in self.contracts if x.lower() == token_address.lower()]) > 0
+                in_contracts = False
+
+                if self.contracts is None:
+                    in_contracts = True
+                else:
+                    in_contracts = len([x for x in self.contracts if x.lower() == token_address.lower()]) > 0
 
                 if in_contracts:
                     token_balance = TokenBalance()
@@ -103,6 +113,12 @@ class Report:
         return output_data
 
 
+    def adapt_data_to_pd(self, data):
+        df = pd.DataFrame()
+
+
+    
+
 
     def output_report(self, output_data):
         if not os.path.exists(GENERATED_REPORT_PATH):
@@ -112,9 +128,14 @@ class Report:
 
         with open(os.path.join(GENERATED_REPORT_PATH, output_filename), mode='w') as output_file:
             output_writer = csv.writer(output_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-            output_writer.writerow(['Wallet Address', 'Contract Address','Name', 'Symbol', 'Balance', 'Chain', 'Block Number', 'Timestamp'])
-            for entry in output_data:
-                output_writer.writerow([entry.owner_address, entry.token_address, entry.name, entry.symbol, entry.formatted_balance, entry.chain.upper(), entry.block_number, entry.timestamp.strftime('%Y-%m-%d')])
+            if output_data[1].timestamp is None:
+                output_writer.writerow(['Wallet Address', 'Contract Address','Name', 'Symbol', 'Balance', 'Chain', 'Block Number'])
+                for entry in output_data:
+                    output_writer.writerow([entry.owner_address, entry.token_address, entry.name, entry.symbol, entry.formatted_balance, entry.chain.upper(), entry.block_number])
+            else:
+                output_writer.writerow(['Wallet Address', 'Contract Address','Name', 'Symbol', 'Balance', 'Chain', 'Block Number', 'Timestamp'])
+                for entry in output_data:
+                    output_writer.writerow([entry.owner_address, entry.token_address, entry.name, entry.symbol, entry.formatted_balance, entry.chain.upper(), entry.block_number, entry.timestamp.strftime('%Y-%m-%d %H:%M:%S')])
 
 
         return output_filename
