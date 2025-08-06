@@ -55,6 +55,8 @@ class Report:
 
     def generate_token_balance_report(self, block_no, timestamp=None):
         output_data = []
+        #hardcode wallet address    
+        wallet_address = '0x0000000000000000000000000000000000000000'
         
         for wallet_data in self.wallet_sheet.itertuples():
             print(wallet_data)
