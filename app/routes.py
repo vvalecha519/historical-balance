@@ -29,17 +29,13 @@ def single_block():
             file_ext = os.path.splitext(filename)[1]
             if file_ext not in UPLOAD_EXTENSIONS:
                 abort(400)
-            if not os.path.exists(UPLOAD_PATH):
-                os.makedirs(UPLOAD_PATH)  # create the directory if it doesn't exist
-            filepath = os.path.join(UPLOAD_PATH, filename)
-            uploaded_file.save(filepath)
-
-            report = Report(filepath)
+            
+            # Process file in memory instead of saving to disk
+            report = Report(uploaded_file)
             output_data = report.generate_token_balance_report(block_no)
-            output_filename = report.adapt_to_pd_and_output(output_data)
-
-            filepath = os.path.join(os.getcwd(), '{}/{}'.format(GENERATED_REPORT_PATH, output_filename))
-            return send_file(filepath)
+            response = report.adapt_to_pd_and_output(output_data)
+            
+            return response
 
     return render_template('single-block.html')
 
@@ -56,17 +52,13 @@ def block_range():
             file_ext = os.path.splitext(filename)[1]
             if file_ext not in UPLOAD_EXTENSIONS:
                 abort(400)
-            if not os.path.exists(UPLOAD_PATH):
-                os.makedirs(UPLOAD_PATH)  # create the directory if it doesn't exist
-            filepath = os.path.join(UPLOAD_PATH, filename)
-            uploaded_file.save(filepath)
-
-            report = Report(filepath)
+            
+            # Process file in memory instead of saving to disk
+            report = Report(uploaded_file)
             output_data = report.generate_token_balance_report_in_block_range(start_block, end_block)
-            output_filename = report.adapt_to_pd_and_output(output_data)
-
-            filepath = os.path.join(os.getcwd(), '{}/{}'.format(GENERATED_REPORT_PATH, output_filename))
-            return send_file(filepath)
+            response = report.adapt_to_pd_and_output(output_data)
+            
+            return response
 
     return render_template('block-range.html')
 
@@ -83,16 +75,12 @@ def date_range():
             file_ext = os.path.splitext(filename)[1]
             if file_ext not in UPLOAD_EXTENSIONS:
                 abort(400)
-            if not os.path.exists(UPLOAD_PATH):
-                os.makedirs(UPLOAD_PATH)  # create the directory if it doesn't exist
-            filepath = os.path.join(UPLOAD_PATH, filename)
-            uploaded_file.save(filepath)
-
-            report = Report(filepath)
+            
+            # Process file in memory instead of saving to disk
+            report = Report(uploaded_file)
             output_data = report.generate_token_balance_report_in_date_range(start_date, end_date)
-            output_filename = report.adapt_to_pd_and_output(output_data)
-
-            filepath = os.path.join(os.getcwd(), '{}/{}'.format(GENERATED_REPORT_PATH, output_filename))
-            return send_file(filepath)
+            response = report.adapt_to_pd_and_output(output_data)
+            
+            return response
 
     return render_template('date-range.html', as_attachment=True)

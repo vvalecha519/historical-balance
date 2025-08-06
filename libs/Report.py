@@ -2,11 +2,13 @@ import os
 import csv
 import time
 import pandas as pd
+import io
 
 from libs.Moralis import Moralis
 from app.TokenBalance import TokenBalance
 from datetime import datetime, timedelta
 from itertools import groupby
+from flask import make_response
 
 
 GENERATED_REPORT_PATH = 'generated_reports'
@@ -23,8 +25,15 @@ class Report:
 
     output_data = []
 
-    def __init__(self, filepath):
-        xls = pd.ExcelFile(filepath)
+    def __init__(self, file_obj_or_path):
+        # Handle both file objects (from memory) and file paths
+        if hasattr(file_obj_or_path, 'read'):
+            # It's a file object
+            xls = pd.ExcelFile(file_obj_or_path)
+        else:
+            # It's a file path (for backward compatibility)
+            xls = pd.ExcelFile(file_obj_or_path)
+        
         self.wallet_sheet = pd.read_excel(xls, 0)
         try:
             self.contracts = pd.read_excel(xls, 1).iloc[:, 0]
@@ -148,14 +157,18 @@ class Report:
 
         df.rename(columns={'owner_address': 'Owner Address', 'token_address': 'Token Address', 'name': 'Name', 'symbol': 'Symbol', 'chain': 'Chain'}, inplace=True)
         
-        if not os.path.exists(GENERATED_REPORT_PATH):
-                os.makedirs(GENERATED_REPORT_PATH)  # create the directory if it doesn't exist
-
+        # Create CSV in memory instead of saving to file
         output_filename = 'token_balance_report_' + str(datetime.now().strftime('%Y-%m-%d_%H-%M-%S')) + '.csv'
         
-        df.to_csv(os.path.join(GENERATED_REPORT_PATH, output_filename), index=False)
-
-        return output_filename
+        # Convert DataFrame to CSV string
+        csv_string = df.to_csv(index=False)
+        
+        # Create a response with the CSV data
+        response = make_response(csv_string)
+        response.headers["Content-Disposition"] = f"attachment; filename={output_filename}"
+        response.headers["Content-type"] = "text/csv"
+        
+        return response
 
     
 
